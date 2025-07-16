@@ -22,12 +22,12 @@ topicSelect.addEventListener('change', async () => {
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
-
+        model: 'gpt-4o-search-preview',
+        web_search_options: {},
         messages: [
           {
             role: 'system',
-            content: 'You are a helpful assistant that summarizes recent stories about the provided topic from this week. Keep your answers brief, clear, and engaging for a general audience.'
+            content: 'You are a helpful assistant that summarizes recent stories about the provided topic from this week. Keep your answers brief, clear, and engaging for a general audience. Display ONLY US-based stories. Do not include any other information.'
           },
           {
             role: 'user',
@@ -40,9 +40,14 @@ topicSelect.addEventListener('change', async () => {
     // Parse the response
     const data = await response.json();
     
-    // Format and update the UI with the response
+    // Get the response text
     const text = data.choices[0].message.content;
-    const formattedText = text
+    
+    // Convert markdown-style links to HTML links
+    const textWithLinks = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+    
+    // Format and update the UI with the response
+    const formattedText = textWithLinks
       .split('\n\n')  // Split into paragraphs
       .filter(para => para.trim() !== '')  // Remove empty paragraphs
       .map(para => `<p>${para}</p>`)  // Wrap in p tags
